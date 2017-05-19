@@ -79,6 +79,11 @@ if provisioner == :ansible && ansible_version < ansible_version_min
 end
 
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+  # Allow an untracked Vagrantfile to modify the configurations
+  [host_config_dir, host_project_dir].uniq.each do |dir|
+    eval File.read "#{dir}/Vagrantfile.local" if File.exist?("#{dir}/Vagrantfile.local")
+  end
+
   # Networking configuration.
   config.vm.hostname = vconfig['vagrant_hostname']
   if vconfig['vagrant_ip'] == '0.0.0.0' && Vagrant.has_plugin?('vagrant-auto_network')
@@ -209,10 +214,5 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     config.cache.synced_folder_opts = {
       type: vconfig['vagrant_synced_folder_default_type']
     }
-  end
-
-  # Allow an untracked Vagrantfile to modify the configurations
-  [host_config_dir, host_project_dir].uniq.each do |dir|
-    eval File.read "#{dir}/Vagrantfile.local" if File.exist?("#{dir}/Vagrantfile.local")
   end
 end
